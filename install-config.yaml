@@ -1,0 +1,205 @@
+apiVersion: v1
+baseDomain: ggnlabs.net
+##proxy:
+##  httpProxy: http://registry:ggnocp_123@provision.rhocp.ggnlabs.net:5000/
+##  httpsProxy: https://registry:ggnocp_123@provision.rhocp.ggnlabs.net:5000/
+##  noProxy: ggnlabs.net,172.25.0.0/21,10.72.32.32/26
+metadata:
+  name: rhocp
+networking:
+  machineNetwork:
+  - cidr: "10.72.33.0/26"
+  networkType: OVNKubernetes
+  clusterNetwork:
+  - cidr: "172.17.0.0/21"
+    hostPrefix: 24
+  serviceNetwork:
+  - "172.18.0.0/21"
+compute:
+- name: worker
+  replicas: 0
+controlPlane:
+  name: master
+  replicas: 3
+  platform:
+    baremetal: {}
+platform:
+  baremetal:
+    bootstrapOSImage: http://10.72.33.2:8080/rhcos-4.12.30-x86_64-qemu.x86_64.qcow2.gz?sha256=f0bf72b10de0b5044d392402aa503200e485c5626f79b677e53ac964a4679604
+    apiVIPs:
+    - "10.72.33.21"
+    ingressVIPs:
+    - "10.72.33.20"
+    externalBridge: baremetal
+    externalMACAddress: b8:59:9f:b5:33:03
+    provisioningNetwork: "Managed"
+    provisioningDHCPRange: "172.25.0.10,172.25.0.100"
+    clusterProvisioningIP: "172.25.0.3"
+    bootstrapProvisioningIP: "172.25.0.2"
+    provisioningBridge: provisioning
+    provisioningNetworkInterface: "ens5f1"
+    provisioningNetworkCIDR: "172.25.0.0/21"
+    bootstrapExternalStaticIP: "10.72.33.3"
+    bootstrapExternalStaticGateway: "10.72.33.1"
+    bootstrapExternalStaticDNS: "10.72.33.2"
+    hosts:
+      - name: master1
+        role: master
+        bmc:
+          address: ipmi://10.72.32.45
+          username: admin
+          password: Nokia@123
+          disableCertificateVerification: True
+        bootMode: legacy
+        bootMACAddress: B8:59:9F:B6:D2:9D
+        rootDeviceHints:
+          deviceName: "/dev/sda"
+        networkConfig:
+          interfaces:
+          - name: ens5f0
+            type: ethernet
+            state: up
+            ipv4:
+              enabled: false
+          - name: ens5f0.512
+            type: vlan
+            state: up
+            vlan:
+              base-iface: ens5f0
+              id: 512
+            ipv4:
+              address:
+              - ip: 10.72.33.22
+                prefix-length: 26
+              enabled: true
+          dns-resolver:
+            config:
+              server:
+              - 10.72.33.2
+          routes:
+            config:
+            - destination: 0.0.0.0/0
+              next-hop-address: 10.72.33.1
+              next-hop-interface: ens5f0.512
+      - name: master2
+        role: master
+        bmc:
+          address: ipmi://10.72.32.42
+          username: admin
+          password: Nokia@123
+          disableCertificateVerification: True
+        bootMACAddress: B8:59:9F:B6:CB:29
+        bootMode: legacy
+        rootDeviceHints:
+          deviceName: "/dev/sda"
+        networkConfig:
+          interfaces:
+          - name: ens5f0
+            type: ethernet
+            state: up
+            ipv4:
+              enabled: false
+          - name: ens5f0.512
+            type: vlan
+            state: up
+            vlan:
+              base-iface: ens5f0
+              id: 512
+            ipv4:
+              address:
+              - ip: 10.72.33.23
+                prefix-length: 26
+              enabled: true
+          dns-resolver:
+            config:
+              server:
+              - "10.72.33.2"
+          routes:
+            config:
+            - destination: 0.0.0.0/0
+              next-hop-address: 10.72.33.1
+              next-hop-interface: ens5f0.512
+      - name: master3
+        role: master
+        bmc:
+          address: ipmi://10.72.32.54
+          username: admin
+          password: Nokia@123
+          disableCertificateVerification: True
+        bootMACAddress: B8:59:9F:B6:C9:AD
+        bootMode: legacy
+        rootDeviceHints:
+          deviceName: "/dev/sda"
+        networkConfig:
+          interfaces:
+          - name: ens5f0
+            type: ethernet
+            state: up
+            ipv4:
+              enabled: false
+          - name: ens5f0.512
+            type: vlan
+            state: up
+            vlan:
+              base-iface: ens5f0
+              id: 512
+            ipv4:
+              address:
+              - ip: 10.72.33.24
+                prefix-length: 26
+              enabled: true
+          dns-resolver:
+            config:
+              server:
+              - 10.72.33.2
+          routes:
+            config:
+            - destination: 0.0.0.0/0
+              next-hop-address: 10.72.33.1
+              next-hop-interface: ens5f0.512
+pullSecret: '{"auths":{"cloud.openshift.com":{"auth":"b3BlbnNoaWZ0LXJlbGVhc2UtZGV2K29jbV9hY2Nlc3NfOGY1NTcxYTFhOWJiNGIwZGEwNGYzMTYzNGNkMGU5NjA6SzFOMjlWWk5COE9NWFJENFZUTVBLVjQ3Rjg1NlVKVERNMEdVMTFGMkpHUDJYQk05SzlHQ09FV0VZNjFPVVBKNA==","email":"somen.pattanayak@nokia.com"},"quay.io":{"auth": "b3BlbnNoaWZ0LXJlbGVhc2UtZGV2K29jbV9hY2Nlc3NfOGY1NTcxYTFhOWJiNGIwZGEwNGYzMTYzNGNkMGU5NjA6SzFOMjlWWk5COE9NWFJENFZUTVBLVjQ3Rjg1NlVKVERNMEdVMTFGMkpHUDJYQk05SzlHQ09FV0VZNjFPVVBKNA==",      "email": "somen.pattanayak@nokia.com"},"registry.connect.redhat.com": {"auth": "fHVoYy1wb29sLTliODIzNjM4LWVkMzMtNDUyZi1iZGE2LTEyNzk3MjJmYzQzZTpleUpoYkdjaU9pSlNVelV4TWlKOS5leUp6ZFdJaU9pSTJZMkppWVdVeE1qazBNbVUwTVdNM09UUXhaVGxrWVRJMU1qZGlOemczTkNKOS5ibTJydVpGeHNWZE1QU1NwRm5fU2RKOUNXZVRFaHNpcF82VXdXTC0wNW9iSlN0Z2MxZGQyVERPRzZ1WUhyRi1lZXp0bEUwZTFlSTR4VGlCUUxVTVdMamhjMUUzcXhMS2ZJTGZ4OFdidTE2YW0xZ1pKbjhtcHNoT21pUjVKY3Jnc2NKM2FiLXRuLXp5OWlQVk03b09vaWNJbkZpQkk2MS0zNUxVYzN3TXJGdXhQNGFseEhPN3pTbXBGRU1ERVZjNllPaWNGajFBVjE2amJiUE1OcU1CbjRzSGxFRGZPZ0xla2pQWS1KSkJ4VHNNd3hSV0NPX0xSOGZTNlVFN1FkdnlFRE90SkpCakk1UEs2VTVGV0Y4dV9zOWNZTlJFOUdfVlJwejdHYVBqdHVIQnZ0b2tVa3RpSXRuVGJyR3BZemNIMmVMNE96VGtnY0E5X0Fad1otZTA4dDdtMjA2ZGdDbjQ5SG4xQzcwb1hXVUVkUWtRVktGRzRYTFhENERfd2trdlVXOXJkdXU3QkIxTHlwZ05uSUFCeENMcS1nSHZQa1pqanMzakpEWFdiS2tKWEhDcy1DeWNaM1c1Vll0N0NmallZcGlNVjd1RUVnMk9Bck1uMlB6Wk5iQnl6RHNIb0xqY2dYUzYxcFBHUndhQk52QU1HMXBTQkdudDhnbUlOSnIxMmZZZGRzd05VVWZxdXdXUGVqQjI1b3BSREl2LTQ5TWNlakQyZVhKLWFtWnNWU09XYzgwX3cxdzZJQ3Fma2FibGtSUnd6aUI0NXVCN1JWd09HQ2FLY1NmT2RIVXZtMGxEY3BjZ1Y0bjFOcnhsMTRGa2VqM1ZrWVFTc2M1dVRsQ2lBa2l3OEJ2dU8xLWdQRkFFSVJMZmZGSzh5SDF1WjNFQ0taSG5qcG81alJpWQ==","email": "somen.pattanayak@nokia.com"},"registry.redhat.io": {  "auth": "fHVoYy1wb29sLTliODIzNjM4LWVkMzMtNDUyZi1iZGE2LTEyNzk3MjJmYzQzZTpleUpoYkdjaU9pSlNVelV4TWlKOS5leUp6ZFdJaU9pSTJZMkppWVdVeE1qazBNbVUwTVdNM09UUXhaVGxrWVRJMU1qZGlOemczTkNKOS5ibTJydVpGeHNWZE1QU1NwRm5fU2RKOUNXZVRFaHNpcF82VXdXTC0wNW9iSlN0Z2MxZGQyVERPRzZ1WUhyRi1lZXp0bEUwZTFlSTR4VGlCUUxVTVdMamhjMUUzcXhMS2ZJTGZ4OFdidTE2YW0xZ1pKbjhtcHNoT21pUjVKY3Jnc2NKM2FiLXRuLXp5OWlQVk03b09vaWNJbkZpQkk2MS0zNUxVYzN3TXJGdXhQNGFseEhPN3pTbXBGRU1ERVZjNllPaWNGajFBVjE2amJiUE1OcU1CbjRzSGxFRGZPZ0xla2pQWS1KSkJ4VHNNd3hSV0NPX0xSOGZTNlVFN1FkdnlFRE90SkpCakk1UEs2VTVGV0Y4dV9zOWNZTlJFOUdfVlJwejdHYVBqdHVIQnZ0b2tVa3RpSXRuVGJyR3BZemNIMmVMNE96VGtnY0E5X0Fad1otZTA4dDdtMjA2ZGdDbjQ5SG4xQzcwb1hXVUVkUWtRVktGRzRYTFhENERfd2trdlVXOXJkdXU3QkIxTHlwZ05uSUFCeENMcS1nSHZQa1pqanMzakpEWFdiS2tKWEhDcy1DeWNaM1c1Vll0N0NmallZcGlNVjd1RUVnMk9Bck1uMlB6Wk5iQnl6RHNIb0xqY2dYUzYxcFBHUndhQk52QU1HMXBTQkdudDhnbUlOSnIxMmZZZGRzd05VVWZxdXdXUGVqQjI1b3BSREl2LTQ5TWNlakQyZVhKLWFtWnNWU09XYzgwX3cxdzZJQ3Fma2FibGtSUnd6aUI0NXVCN1JWd09HQ2FLY1NmT2RIVXZtMGxEY3BjZ1Y0bjFOcnhsMTRGa2VqM1ZrWVFTc2M1dVRsQ2lBa2l3OEJ2dU8xLWdQRkFFSVJMZmZGSzh5SDF1WjNFQ0taSG5qcG81alJpWQ==","email": "somen.pattanayak@nokia.com"},"provision.rhocp.ggnlabs.net:5000": {"auth": "cmVnaXN0cnk6Z2dub2NwXzEyMw==","email": "kni@redhat.com"}}}'
+sshKey: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEaP6kC/YX2Ix9wt4YHYG+xSAR3kAczOh9MrMMPvxImx kni@provision.rhocp.ggnlabs.net '
+
+additionalTrustBundle: |
+  -----BEGIN CERTIFICATE-----
+  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
+  0Jh6
+  -----END CERTIFICATE-----
+imageContentSources:
+- mirrors:
+  - provision.rhocp.ggnlabs.net:5000/labocp
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - provision.rhocp.ggnlabs.net:5000/labocp
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
